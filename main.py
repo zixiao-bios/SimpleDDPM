@@ -6,24 +6,11 @@ from dataset import FFHQDataset
 from ddpm import DDPM
 import torch.nn as nn
 from tqdm import tqdm
+import yaml
 
 from unet import UNet
+from config import *
 
-
-num_workers = 10
-
-batch_size = 24
-lr = 1e-3
-epochs = 100
-
-n_steps = 1000
-min_beta = 1e-4
-max_beta = 0.02
-
-
-def dynamic_normalize(img):
-    """根据图像中像素值的范围，动态归一化到[0, 1]"""
-    return (img - img.min()) / (img.max() - img.min())
 
 def train(dateset, device, net: nn.Module):
     dataloader = DataLoader(dateset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
@@ -90,26 +77,9 @@ def main():
     ])
     
     dataset = FFHQDataset(transform=transform)
-    # dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    assert input_shape == dataset[0][0].shape, 'input_shape must be the same as the shape of the dataset'
     
-    # ddpm = DDPM(n_steps=n_steps, min_beta=min_beta, max_beta=max_beta, device=device)
-    
-    # 显示加噪声后的图像
-    # noise_steps = [0, 10, 50, 100, 200, 500, 999]
-    # fig, axs = plt.subplots(batch_size, len(noise_steps), figsize=(15, 5))
-    # data_batch = next(iter(dataloader))
-    # for i, step in enumerate(noise_steps):
-    #     img_batch = data_batch[0].to(device)
-    #     step_batch = torch.full((batch_size, 1), step, device=device)
-    #     x_t, noise = ddpm.noise_sample(img_batch, step_batch)
-    #     for j in range(batch_size):
-    #         x_t_pil = transforms.ToPILImage()(dynamic_normalize(x_t[j]))
-    #         axs[j, i].imshow(x_t_pil)
-    #         axs[j, i].set_title(f"Step {step}")
-    #         axs[j, i].axis('off')
-    # plt.show()
-    
-    net = UNet(n_steps=n_steps, pe_dim=10, input_shape=dataset[0][0].shape, device=device)
+    net = UNet(n_steps=n_steps, pe_dim=pe_dim, input_shape=input_shape, device=device)
     print('start training')
     train(dataset, device, net)
 

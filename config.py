@@ -1,0 +1,11 @@
+n_steps = 1000
+min_beta = 1e-4
+max_beta = 0.02
+pe_dim = 10
+
+num_workers = 10
+batch_size = 24
+lr = 1e-3
+epochs = 100
+
+input_shape = (3, 64, 64)

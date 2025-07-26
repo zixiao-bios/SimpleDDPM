@@ -43,22 +43,42 @@ class DDPM():
         Returns:
             x_{t-1} (_type_): 第 t-1 步的原始样本, shape: (batch_size, channels, height, width)
         """
-        if t == 0:
-            z = torch.zeros_like(x_t)
-        else:
-            z = torch.randn_like(x_t)
+        assert x_t.shape[0] == t.shape[0], 'x_t and t must have the same batch size'
         
+        # 预测噪声
         noise_hat = net(x_t, t)
-        return (x_t - (1 - self.alphas[t]) / (1 - self.alphas_bar[t]) ** 0.5) / self.alphas_bar[t] ** 0.5 + self.betas[t] * z
+        
+        # 如果 t == 0，则对应位置的 z 为 0，否则为随机噪声
+        t = torch.squeeze(t)
+        z = torch.randn_like(x_t)
+        z[t == 0, ...] = 0
+        
+        # 计算所需参数
+        alpha_t = self.alphas[t].reshape(-1, 1, 1, 1)
+        alpha_bar_t = self.alphas_bar[t].reshape(-1, 1, 1, 1)
+        beta_t = self.betas[t].reshape(-1, 1, 1, 1)
+        
+        return (
+            (x_t - ((1 - alpha_t) / (1 - alpha_bar_t).sqrt()) * noise_hat)
+            / alpha_t.sqrt()
+            + beta_t.sqrt() * z
+        )
     
-    def backward_sample(self, x_T, net: nn.Module):
+    def backward_sample(self, x_T, net: nn.Module, extra_steps = []):
         """DDPM 反向过程，根据 x_T 和 net，生成 x_0
 
         Args:
             x_T (_type_): x_T 推理时从高斯噪声采样
             net (nn.Module): 预测噪声的神经网络
+            extra_steps (_type_, optional): 额外返回的时间步数，用于可视化训练过程. Defaults to [].
         """
+        extra_imgs = {}
+        
         x_t = x_T
         for t in range(self.n_steps - 1, -1, -1):
-            x_t = self.backward_sample_one_step(x_t, t, net)
-        return x_t
+            if t in extra_steps:
+                extra_imgs[t] = x_t
+            t_tensor = torch.full((x_t.shape[0], 1), t, device=self.device)
+            x_t = self.backward_sample_one_step(x_t, t_tensor, net)
+        
+        return x_t, extra_imgs
