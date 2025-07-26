@@ -1,7 +1,5 @@
 torch>=1.9.0
 torchvision>=0.10.0
-datasets>=2.0.0
-Pillow>=8.0.0
-transformers>=4.0.0
 tqdm>=4.0.0
-matplotlib>=3.0.0 
+matplotlib>=3.0.0
+tensorboardX>=2.0.0 
