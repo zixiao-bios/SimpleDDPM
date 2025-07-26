@@ -25,6 +25,7 @@ class DDPM():
             t (_type_): 时间步数, shape: (batch_size, 1)
         Returns:
             x_t (_type_): 第 t 步的加噪声后的样本, shape: (batch_size, channels, height, width)
+            noise (_type_): 噪声, shape: (batch_size, channels, height, width)
         """
         t = torch.squeeze(t)
         alpha_bar_t = self.alphas_bar[t].reshape(-1, 1, 1, 1)

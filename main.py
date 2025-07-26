@@ -45,7 +45,7 @@ def train(dateset, device, net: nn.Module):
         for data_batch in batch_pbar:
             img_batch = data_batch[0].to(device)
             
-            step = torch.randint(0, n_steps, (batch_size, 1), device=device)
+            step = torch.randint(0, n_steps, (img_batch.shape[0], 1), device=device)
             x_t, noise = ddpm.noise_sample(img_batch, step)
 
             pred_noise = net(x_t, step)
