@@ -3,8 +3,8 @@ min_beta = 1e-4
 max_beta = 0.02
 pe_dim = 10
 
-num_workers = 10
-batch_size = 24
+num_workers = 4
+batch_size = 64
 lr = 1e-3
 epochs = 100
 

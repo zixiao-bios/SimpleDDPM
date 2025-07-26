@@ -1,12 +1,10 @@
 import torch
 import torchvision.transforms as transforms
+from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
-from dataset import FFHQDataset
 from ddpm import DDPM
 import torch.nn as nn
 from tqdm import tqdm
-import yaml
 
 from unet import UNet
 from config import *
@@ -21,6 +19,8 @@ def train(dateset, device, net: nn.Module):
     
     net = net.to(device)
     net.train()
+    
+    print(f"开始训练 - 数据集大小: {len(dateset)}, Batch大小: {batch_size}, Workers: {num_workers}")
     
     for epoch in range(epochs):
         epoch_loss = 0
@@ -76,7 +76,7 @@ def main():
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     
-    dataset = FFHQDataset(transform=transform)
+    dataset = ImageFolder(root="data/FFHQ64/imgs", transform=transform)
     assert input_shape == dataset[0][0].shape, 'input_shape must be the same as the shape of the dataset'
     
     net = UNet(n_steps=n_steps, pe_dim=pe_dim, input_shape=input_shape, device=device)
