@@ -87,7 +87,7 @@ def train(dateset, device, net: nn.Module):
         scheduler.step()
         
         # 每 10 个 epoch 保存权重
-        if (epoch + 1) % 2 == 0:
+        if (epoch + 1) % 10 == 0:
             torch.save(net.state_dict(), f"{weights_dir}/unet_weights_{epoch+1}.pth")
             print(f"Saved weights to {weights_dir}/unet_weights_{epoch+1}.pth")
 
