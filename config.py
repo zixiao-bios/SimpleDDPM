@@ -5,14 +5,14 @@ max_beta = 0.02
 
 # UNet 参数
 pe_dim = 10
-channels = [10, 20, 40, 80]
+channels = [30, 60, 100, 180]
 residual = True
 
 # 训练参数
 num_workers = 6
 batch_size = 128
 lr = 1e-3
-epochs = 1000
+epochs = 800
 
 # 数据集参数
 img_path = "/workspace/FFHQ-64x64/imgs"
