@@ -1,2 +1,4 @@
 __pycache__
-data/cifar-10
+data
+weights
+logs

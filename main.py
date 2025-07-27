@@ -7,12 +7,16 @@ import torch.nn as nn
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
 import time
+import os
 
 from unet import UNet
 from config import *
 
 
 def train(dateset, device, net: nn.Module):
+    weights_dir = f'weights/{time.strftime("%Y-%m-%d_%H-%M-%S")}'
+    os.makedirs(weights_dir, exist_ok=True)
+    
     dataloader = DataLoader(dateset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     ddpm = DDPM(n_steps=n_steps, min_beta=min_beta, max_beta=max_beta, device=device)
     
@@ -83,8 +87,9 @@ def train(dateset, device, net: nn.Module):
         scheduler.step()
         
         # 每 10 个 epoch 保存权重
-        if (epoch + 1) % 10 == 0:
-            torch.save(net.state_dict(), f"weights/unet_weights_{epoch+1}.pth")
+        if (epoch + 1) % 2 == 0:
+            torch.save(net.state_dict(), f"{weights_dir}/unet_weights_{epoch+1}.pth")
+            print(f"Saved weights to {weights_dir}/unet_weights_{epoch+1}.pth")
 
 
 def main():
@@ -105,7 +110,7 @@ def main():
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     
-    dataset = ImageFolder(root="data/FFHQ64/imgs", transform=transform)
+    dataset = ImageFolder(root=img_path, transform=transform)
     assert input_shape == dataset[0][0].shape, 'input_shape must be the same as the shape of the dataset'
     
     net = UNet(n_steps=n_steps, pe_dim=pe_dim, input_shape=input_shape, channels=channels, residual=residual, device=device)
