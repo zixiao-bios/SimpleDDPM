@@ -7,7 +7,7 @@ from config import *
 from ddpm import DDPM
 from utils import dynamic_normalize, show_step_imgs
 
-weight_path = "weights/unet_weights_420.pth"
+weight_path = "example_weights/unet_weights_150.pth"
 
 
 def generate_image(ddpm, net, device):
