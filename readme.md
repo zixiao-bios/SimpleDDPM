@@ -2,6 +2,32 @@
 
 这是一个基于PyTorch实现的简单DDPM（Denoising Diffusion Probabilistic Models）项目，使用UNet作为骨干网络进行图像生成。
 
+## 算法原理
+
+### DDPM扩散过程
+
+DDPM通过正向扩散过程逐步向图像添加噪声，然后训练神经网络学习反向去噪过程：
+
+![DDPM前向和反向过程](doc/denoising-diffusion-probabilistic-models-forward_and_backward_equations.png)
+
+### UNet网络架构
+
+项目使用UNet作为去噪网络的骨干架构，通过编码器-解码器结构和跳跃连接实现特征提取和重建：
+
+![UNet架构图](doc/u-net-architecture.png)
+
+## 生成效果展示
+
+以下是使用预训练权重生成的人脸图像效果：
+
+<div align="center">
+  <img src="doc/gen_face_1.png" width="400" alt="生成效果1"/>
+  <img src="doc/gen_face_2.png" width="400" alt="生成效果2"/>
+  <img src="doc/gen_face_3.png" width="400" alt="生成效果3"/>
+</div>
+
+*使用FFHQ-64x64数据集训练的模型生成的64x64像素人脸图像*
+
 ## 项目特点
 
 - 🎯 **简单易懂**: 代码结构清晰，注释详细，适合学习DDPM原理
@@ -9,6 +35,8 @@
 - 📊 **监控训练**: 支持TensorBoard监控训练过程
 - 🔧 **灵活配置**: 通过config.py轻松调整超参数
 - 🎨 **图像生成**: 支持从噪声生成64x64像素的图像
+- ⚡ **高效训练**: 算力要求不高，在FFHQ-64x64数据集上约100轮收敛
+- 🎁 **预训练权重**: 提供10、150、800轮训练的权重文件，可直接测试
 
 ## 项目结构
 
@@ -58,8 +86,12 @@ SimpleDDPM/
    cd FFHQ-64x64
    unzip ffhq-64x64.zip
    # 数据集包含70,000张64x64像素的人脸图像
+
+   # 数据集的图片分成了多个文件夹，移动到一个统一文件夹中
+   mkdir imgs
+   mv 00* imgs/
    
-   # 修改 config 中的 img_path 至解压目录
+   # 修改 config 中的 img_path 为上面创建的 imgs 文件夹路径
    ```
    
    数据集信息：
@@ -82,14 +114,14 @@ max_beta = 0.02         # 最大噪声调度
 
 # UNet 参数
 pe_dim = 10             # 位置编码维度
-channels = [10, 20, 40, 80]  # 各层通道数
+channels = [30, 60, 100, 180]  # 各层通道数
 residual = True         # 是否使用残差连接
 
 # 训练参数
 num_workers = 6         # 数据加载器工作进程数
 batch_size = 128        # 批次大小
 lr = 1e-3              # 学习率
-epochs = 1000           # 训练轮数
+epochs = 800            # 训练轮数
 
 # 数据集参数
 img_path = "/workspace/FFHQ-64x64/imgs"  # 数据集路径，根据实际下载位置调整
@@ -110,6 +142,24 @@ python main.py
 - 每2个epoch保存模型权重到 `weights/` 目录
 - 记录训练日志到TensorBoard
 
+#### 训练性能
+
+在FFHQ-64x64数据集上使用默认参数训练：
+- **收敛轮数**: 约100轮网络开始收敛，生成质量明显提升
+- **算力要求**: 训练对硬件要求不高，适合个人学习使用
+  - M1 Pro MacBook: 约5分钟/轮
+  - RTX 5090: 约25秒/轮
+  - 其他设备可根据性能按比例估算
+
+#### 预训练权重
+
+为了方便测试，项目提供了在默认参数下预训练的权重文件：
+- `example_weights/unet_weights_10.pth` - 训练10轮的权重
+- `example_weights/unet_weights_150.pth` - 训练150轮的权重  
+- `example_weights/unet_weights_800.pth` - 训练800轮的权重
+
+可以直接使用这些权重运行`test.py`测试生成效果，无需重新训练。
+
 ### 生成图像
 
 ```bash
@@ -119,8 +169,7 @@ python test.py
 生成过程会：
 - 加载训练好的模型权重
 - 从随机噪声开始生成图像
-- 显示生成过程中的中间结果
-- 保存最终生成的图像
+- 显示生成的过程和最终结果
 
 ### 监控训练
 
